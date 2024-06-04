@@ -37,7 +37,7 @@ export const fetchSubmissionByTaskId = createAsyncThunk("submission/fetchSubmiss
         setAuthHeader(localStorage.getItem("jwt"), api)
         try {
             const { data } = await api.get(`/api/submission/task/${taskId}`, {});
-            console.log("Submitted Task: ",data);
+            console.log("fetchSubmissionByTaskId: ",data);
             return data;
         } catch (error) {
             console.log("error: ", error);
@@ -45,18 +45,22 @@ export const fetchSubmissionByTaskId = createAsyncThunk("submission/fetchSubmiss
         }
     } 
 );
-export const acceptDeclineSubmission = createAsyncThunk("submission/acceptDeclineSubmission",
-    async ({ id,status}) => { 
-        setAuthHeader(localStorage.getItem("jwt", api))
-        try {
-            const { data } = await api.put(`/api/submission/${id}?status=${status}`, {});
-            console.log("accept task: ",data);
-            return data;
-        } catch (error) {
-            console.log("error: ", error);
-            throw Error(error.response.data.error);
-        }
-    } 
+export const acceptDeclineSubmission = createAsyncThunk(
+  "submission/acceptDeclineSubmission",
+  async ({ id, status }, { rejectWithValue }) => {
+    setAuthHeader(localStorage.getItem("jwt"));
+    try {
+      console.log(`Updating submission with ID: ${id} to status: ${status}`);
+      const response = await api.put(`/api/submission/${id}`, null, {
+        params: { status }
+      });
+      console.log("Updated submission:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error updating submission:", error);
+      return rejectWithValue(error.response?.data?.error || 'Unknown error');
+    }
+  }
 );
 const submissionSlice = createSlice({
     name: "submission",
@@ -68,10 +72,10 @@ const submissionSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => { 
         builder
-            .addCase(submitTask.pending, (state) => { 
+            .addCase(submitTask.pending, (state) => {
                 state.status = "loading";
             })
-            .addCase(submitTask.fulfilled, (state, action) => { 
+            .addCase(submitTask.fulfilled, (state, action) => {
                 state.status = "succeeded";
                 state.submission.push(action.payload);
             })
@@ -80,7 +84,7 @@ const submissionSlice = createSlice({
                 state.error = action.error.message;
             })
        
-            .addCase(fetchAllSubmission.fulfilled, (state, action) => { 
+            .addCase(fetchAllSubmission.fulfilled, (state, action) => {
                 state.status = "succeeded";
                 state.submission = action.payload;
             })
@@ -88,11 +92,18 @@ const submissionSlice = createSlice({
                 state.status = "failed";
                 state.error = action.error.message;
             })
-            .addCase(fetchSubmissionByTaskId.fulfilled, (state, action) => { 
+           
+            .addCase(fetchSubmissionByTaskId.fulfilled, (state, action) => {
+                state.submission = action.payload;
                 state.status = "succeeded";
-                state.submission=state.submission.map((item)=>item.id!=action.payload.id? item:action.payload);
-                
-            });
+            })
+            .addCase(acceptDeclineSubmission.fulfilled, (state, action) => {
+    state.status = "succeeded";
+    state.submission = state.submission.map((item) => {
+        return item.id !== action.payload.id ? item : action.payload;
+    });
+});
+
     },
 });
 export default submissionSlice.reducer;

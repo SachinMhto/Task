@@ -3,12 +3,16 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Button, IconButton } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
+import { useDispatch } from "react-redux";
+import { acceptDeclineSubmission } from "../../../ReduxToolKit/SubmissionSlice";
 
 const SubmissionCard = ({ item }) => {
+  const dispatch = useDispatch();
   const [isAccepted, setIsAccepted] = useState(true);
 
-  const handleAcceptOrDecline = ({ status }) => {
-    console.log(status);
+  const handleAcceptOrDecline = (status) => {
+    dispatch(acceptDeclineSubmission({ id: item.id, status }));
+    console.log("item from submissioncard: ", item);
   };
 
   return (
@@ -24,12 +28,12 @@ const SubmissionCard = ({ item }) => {
           </div>
         </div>
         <div className="flex items-center gap-2 text-xs">
-          <p>Submission Time: 2024-01</p>
+          <p>Submission Time: {item.submissionTime}</p>
           <p className="text-gray-500"></p>
         </div>
       </div>
       <div>
-        {isAccepted ? (
+        {item.status === "PENDING" ? (
           <div className="flex gap-5">
             <div className="text-green-500">
               <IconButton
@@ -49,8 +53,12 @@ const SubmissionCard = ({ item }) => {
             </div>
           </div>
         ) : (
-          <Button color="success" size="small" variant="outlined">
-            Accept
+          <Button
+            color={item.status == "ACCEPTED" ? "success" : "error"}
+            size="small"
+            variant="outlined"
+          >
+            {item.status}
           </Button>
         )}
       </div>

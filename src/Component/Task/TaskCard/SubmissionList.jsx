@@ -1,13 +1,11 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import SubmissionCard from "./SubmissionCard";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { fetchSubmissionByTaskId } from "../../../ReduxToolKit/SubmissionSlice";
 import { useLocation } from "react-router-dom";
+import SubmissionCard from "./SubmissionCard";
 
 const style = {
   position: "absolute",
@@ -20,17 +18,21 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
-const submission = [1, 1, 1, 1];
+
 export default function SubmissionList({ handleClose, open }) {
   const dispatch = useDispatch();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const taskId = queryParams.get("taskId");
-  const { submission } = useSelector((store) => store);
+  const { submission } = useSelector((store) => store.submission);
+
   useEffect(() => {
-    console.log("fetch submission by task Id");
-    dispatch(fetchSubmissionByTaskId(taskId));
-  }, [taskId]);
+    if (taskId) {
+      console.log("Fetching submission by task Id:", taskId);
+      dispatch(fetchSubmissionByTaskId(taskId));
+    }
+  }, [taskId, dispatch]);
+
   return (
     <div>
       <Modal
@@ -40,17 +42,15 @@ export default function SubmissionList({ handleClose, open }) {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <div className="">
-            {submission.submission.length > 0 ? (
+          <div>
+            {submission.length > 0 ? (
               <div className="space-y-2">
-                {submission.submission.map((item) => (
-                  <SubmissionCard item={item} />
+                {submission.map((item) => (
+                  <SubmissionCard key={item.id} item={item} />
                 ))}
               </div>
             ) : (
-              <div className="">
-                <div>No Submission Found</div>
-              </div>
+              <div>No Submission Found</div>
             )}
           </div>
         </Box>
