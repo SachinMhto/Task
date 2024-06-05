@@ -17,7 +17,7 @@ function App() {
     const jwt = auth.jwt || localStorage.getItem("jwt");
     if (jwt) {
       dispatch(getUserProfile(jwt));
-      console.log("getUserProfile executed...",jwt);
+      console.log("getUserProfile executed...", jwt);
     }
   }, [auth.jwt, dispatch]);
 

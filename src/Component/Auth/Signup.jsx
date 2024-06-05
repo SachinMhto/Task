@@ -7,23 +7,40 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { register } from "../../ReduxToolKit/AuthSlice";
+import { useNavigate } from "react-router-dom";
 
 const Signup = ({ togglePanel }) => {
   const dispatch = useDispatch();
+  const { auth } = useSelector((store) => store);
+  const navigate = useNavigate();
   const [formData, setFormdata] = useState({
-    fullname: "",
+    username: "",
     email: "",
     password: "",
     role: "",
   });
+  const [isRegistered, setIsRegistered] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormdata({ ...formData, [name]: value });
   };
+
+  useEffect(() => {
+    if (auth.data && auth.data.status) {
+      alert("Registration successful!");
+      setFormdata({
+        username: "",
+        email: "",
+        password: "",
+        role: "",
+      });
+      setIsRegistered(true);
+    }
+  }, [auth.data]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -33,16 +50,16 @@ const Signup = ({ togglePanel }) => {
 
   return (
     <div>
-      <h1 className="text-lg font-bold text-center pb-8">Register Here</h1>
       <form className="space-y-3" onSubmit={handleSubmit}>
+        <h1 className="text-lg font-bold text-center pb-8">Register Here</h1>
         <TextField
           fullWidth
-          label="Fullname"
-          name="fullname"
+          label="Username"
+          name="username"
           type="text"
-          value={formData.fullname}
+          value={formData.username}
           onChange={handleChange}
-          placeholder="Enter Your fullname.."
+          placeholder="Enter Your Name.."
         />
         <TextField
           fullWidth

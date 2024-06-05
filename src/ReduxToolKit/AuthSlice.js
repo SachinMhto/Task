@@ -17,6 +17,7 @@ export const login = createAsyncThunk("auth/login", async (userData) => {
 export const register = createAsyncThunk("auth/register", async (userData) => {
     try {
         const { data } = await axios.post(`${BASE_URL}/auth/signup`, userData);
+        console.log("User Data Before Register: ",userData);
         localStorage.setItem("jwt", data.jwt);
         console.log("Register Success", data);
         return data;
@@ -89,8 +90,8 @@ const authSlice = createSlice({
             })
             .addCase(register.fulfilled, (state, action) => {
                 state.loading = false;
-                state.jwt = action.payload.jwt;
-                state.loggedIn = true;
+                state.data = action.payload;
+                state.loggedIn =false;
             })
             .addCase(register.rejected, (state, action) => {
                 state.loading = false;
